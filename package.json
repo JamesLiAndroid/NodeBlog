@@ -1,0 +1,23 @@
+{
+  "name": "node-blog",
+  "version": "0.0.1",
+  "description": "node技术栈搭建博客系统",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesLiAndroid/NodeBlog.git"
+  },
+  "keywords": [
+    "node",
+    "blog"
+  ],
+  "author": "JamesLiAndroid",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JamesLiAndroid/NodeBlog/issues"
+  },
+  "homepage": "https://github.com/JamesLiAndroid/NodeBlog#readme"
+}
