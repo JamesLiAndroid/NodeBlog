@@ -11,6 +11,11 @@ app.use((req, res, next) => {
   console.log(2)
   res.status(200).end()
 })
+
+app.use((error, req, res, next) => {
+  console.error(error.stack)
+  res.status(500).send('Something broke!')
+})
 /*
 
 var indexRouter = require('./routes/index')
