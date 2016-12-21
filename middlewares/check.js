@@ -1,3 +1,4 @@
+// 检查登录状态的中间件
 module.exports ={
   checkLogin: (req, res, next) => {
     if(!req.session.user) {
