@@ -6,7 +6,14 @@ var PostModel = require('../models/posts')
 // GET /posts 所有用户或者特定用户的文章页
 // //   eg: GET /posts?author=xxx
 router.get('/', (req,res,next) => {
-  res.render('posts')
+  var author = req.query.author
+  PostModel.getPosts(author).then((posts) => {
+    res.render('post', {
+      posts: posts
+    })
+  })
+  .catch(next)
+//  res.render('posts')
 //  res.send(req.flash())
 })
 
@@ -54,12 +61,48 @@ router.get('/create', checkLogin, (req,res,next) => {
 
 // GET /posts/:postId 单独一篇的文章页
 router.get('/:postId', (req,res,next) => {
-  res.send(req.flash())
+  var postId = req.params.postId
+
+  Promise.all([
+    PostModel.getPostId(postId),
+    PostModel.incPV(postId)
+  ])
+  .then((result) => {
+    var post = result[0]
+    if(post) {
+      throw new Error('该文章不存在')
+    }
+
+    res.render('post', {
+      post: post
+    })
+  })
+  .catch(next)
+//   res.send(req.flash())
 })
 
 // GET /posts/:postId/edit 更新文章页
 router.get('/:postId/edit', checkLogin, (req,res,next) => {
-  res.send(req.flash())
+  var postId = req.params.postId
+  var author = req.session.user._id
+
+  PostModel.getRawPostById(postId)
+    .then((post) => {
+      if(!post) {
+        throw new Error('该文章不存在')
+      }
+
+      if(author.toString() !== post.author._id.toString()) {
+        throw new Error("权限不足")
+      }
+
+      res.render('edit', {
+        post: post
+      })
+
+      .catch(next)
+    })
+//   res.send(req.flash())
 })
 
 // POST /posts/:postId/edit 更新一篇文章
