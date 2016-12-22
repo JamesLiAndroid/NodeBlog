@@ -17,6 +17,8 @@ app.set('view engine', 'ejs')
 app.use(express.static(path.join(__dirname, 'public')))
 // session中间件，通过express-session组件实现
 app.use(session({
+  resave: false,
+  saveUninitialized: true,
   name: config.session.key,
   secret: config.session.secret,
   cookie: {
@@ -29,6 +31,13 @@ app.use(session({
 // flash中间件，用来显示通知
 app.use(flash())
 
+// 处理表单以及文件上传的中间件
+app.use(require('express-formidable')({
+  uploadDir: path.join(__dirname, 'public/img'), // 上传文件目录
+  keepExtensions: true // 保留后缀
+
+}))
+
 // 设置模板全局变量
 app.locals.blog = {
   title: pkg.name,
@@ -39,7 +48,7 @@ app.locals.blog = {
 app.use((req, res, next) => {
   res.locals.user = req.session.user
   res.locals.success = req.flash('success').toString()
-  res.locals.error = req.flass('error').toString()
+  res.locals.error = req.flash('error').toString()
 })
 
 
