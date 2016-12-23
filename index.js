@@ -54,6 +54,13 @@ app.use((req, res, next) => {
 
 routes(app)
 
+// 错误处理
+app.use((error, req, res, next) => {
+  res.render('error', {
+    error: error
+  })
+})
+
 // 监听端口，启动程序
 app.listen(config.port, () => {
   console.log(`${pkg.name} listening on port ${config.port}`)
