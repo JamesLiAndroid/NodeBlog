@@ -7,6 +7,9 @@ var config = require('config-lite')
 var routes = require('./routes')
 var pkg = require('./package')
 
+var winston = require('winston')
+var expressWinston = require('express-winston')
+
 var app = express()
 
 // 指定模板目录和加载模板引擎
@@ -50,8 +53,32 @@ app.use((req, res, next) => {
   res.locals.error = req.flash('error').toString()
 })
 
-
+// 正常请求的日志
+app.use(expressWinston.logger({
+  transports: [
+    new (winston.transports.Console)({
+      json: true,
+      colorize: true
+    }),
+    new winston.transports.File({
+      filename: 'log/success.log'
+    })
+  ]
+}))
+// 路由
 routes(app)
+// 错误请求日志
+app.use(expressWinston.errorLogger({
+  transports: [
+    new (winston.transports.Console)({
+      json: true,
+      colorize: true
+    }),
+    new winston.transports.File({
+      filename: 'log/error.log'
+    })
+  ]
+}))
 
 // 错误处理
 app.use((error, req, res, next) => {
