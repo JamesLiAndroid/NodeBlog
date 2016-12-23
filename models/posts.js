@@ -1,6 +1,30 @@
 var marked = require('marked')
 var Post = require('../lib/mongo').Post
 
+var CommentModel = require('./comments')
+// 给post添加留言数CommentsCount
+Post.plugin('addCommentsCount', {
+  afterFind: (posts) => {
+    return Promise.all(posts.map((post) => {
+      return CommentModel.getCommentsCount(post._id)
+        .then((commentsCount) => {
+          post.commentsCount = commentCount
+          return post
+        })
+    }))
+  },
+
+  afterFindOne: (post) => {
+    if(post) {
+      return CommentModel.getCommentsCount(post._id).then((count) => {
+        post.commentsCount = count
+        return post
+      })
+    }
+    return post
+  }
+})
+
 // 将post的content从markdown转成html
 Post.plugin('contentToHtml', {
   afterFind: (posts) => {
@@ -26,7 +50,7 @@ module.exports = {
   // 通过文章id获取一篇文章
   getPostById: (postId) => {
     return Post.findOne({ _id: postId }).populate({ path: 'author', model: 'User' })
-      .addCreatedAt().contentToHtml().exec()
+      .addCreatedAt().addCommentsCount().contentToHtml().exec()
   },
 
   // 按创建时间降序获取所有用户文章或者某个特定用户的文章
@@ -36,7 +60,7 @@ module.exports = {
       query.author = author
     }
     return Post.find(query).populate({ path: 'author', model: 'User'}).sort({_id: -1})
-      .addCreatedAt().contentToHtml().exec()
+      .addCreatedAt().addCommentsCount().contentToHtml().exec()
   },
 
   // 通过文章id给pv加1
@@ -57,6 +81,12 @@ module.exports = {
   // 通过用户id和文章id删除一篇文章
   delPostById: (postId, author) => {
     return Post.remove({ author: author, _id: postId }).exec()
+      .then((res) => {
+        // 文章删除后，再删除该文章下的所有留言
+        if(res.result.ok && res.result.n > 0) {
+          return CommentModel.delCommentsByPostId(postId)
+        }
+      })
   }
 
 }
